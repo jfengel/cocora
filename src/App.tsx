@@ -4,6 +4,7 @@ import 'react-geosuggest/module/geosuggest.css'
 import './App.css';
 import Map, {MAX_ZOOM} from './components/Map'
 import {Viewport} from "react-leaflet";
+import FaceSelect from "./components/FaceSelect";
 
 const GEOLOCATION_UPDATE_FREQUENCY_MSEC = 1000;
 const SEARCH_RADIUS_METERS = 500;
@@ -23,6 +24,7 @@ function App() {
     const [currentPosition, setCurrentPosition] = useState<google.maps.LatLng>();
     const [nearbyPlaces, setNearbyPlaces] = useState<google.maps.places.PlaceResult[]>([]);
     const [viewport, setViewport] = useState<Viewport | undefined>();
+    const [rating, setRating] = useState<number | undefined>();
 
     const positionRef = useRef(currentPosition);
 
@@ -99,12 +101,10 @@ function App() {
         <p>
             {location && location.icon && <img src={location.icon} alt={""}/>}
             {location && location.name}
+            <FaceSelect
+                current={rating}
+                onSelect={setRating}/>
         </p>
-        <ul>
-            {nearbyPlaces
-                .filter((_, i) => i < 4)
-                .map((place, i) => <li key={i}>{place.name}</li>)}
-        </ul>
         <div className="mapContainer">
             <Map
                 currentPosition={currentPosition && [currentPosition.lat(), currentPosition.lng()]}
