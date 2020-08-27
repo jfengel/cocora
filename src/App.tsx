@@ -1,17 +1,41 @@
 import React, {useEffect, useRef, useState} from 'react';
-import Geosuggest from 'react-geosuggest';
+import Geosuggest, {Suggest} from 'react-geosuggest';
 import 'react-geosuggest/module/geosuggest.css'
 import './App.css';
-import Map from './components/Map'
+import Map, {MAX_ZOOM} from './components/Map'
+import {Viewport} from "react-leaflet";
 
 const GEOLOCATION_UPDATE_FREQUENCY_MSEC = 1000;
 const SEARCH_RADIUS_METERS = 500;
 
+const googleToLeafletPair = (g: google.maps.LatLng) : [number, number] => {
+    return [g.lat(), g.lng()];
+}
+
+
+function suggestionToPlace(e: Suggest) : google.maps.places.PlaceResult {
+    // @ts-ignore
+    return e.gmaps; // Despite the TS definition, it seems compatible with PlaceResult
+}
+
 function App() {
-    const [location, setLocation] = useState();
+    const [location, setLoc] = useState<google.maps.places.PlaceResult>();
     const [currentPosition, setCurrentPosition] = useState<google.maps.LatLng>();
     const [nearbyPlaces, setNearbyPlaces] = useState<google.maps.places.PlaceResult[]>([]);
+    const [viewport, setViewport] = useState<Viewport | undefined>();
+
     const positionRef = useRef(currentPosition);
+
+    const setLocation = (loc : google.maps.places.PlaceResult) => {
+        if(loc.geometry?.location) {
+            const vp = {center: googleToLeafletPair(loc.geometry?.location), zoom: MAX_ZOOM};
+            setViewport(vp)
+        }
+        if(!nearbyPlaces.find(place => place.place_id === loc.place_id)) {
+            setNearbyPlaces([...nearbyPlaces, loc])
+        }
+        setLoc(loc);
+    }
 
     const findNearbyPlaces = (current : google.maps.LatLng) => {
         const location = current || positionRef.current;
@@ -66,20 +90,15 @@ function App() {
             }
         }
 
-    useEffect(() => {
-        setInterval(findNearbyPlaces, 30000)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
     return <div className="App">
         <Geosuggest
-            onSuggestSelect={(e) => setLocation(e)}
+            onSuggestSelect={(e) => setLocation(suggestionToPlace(e))}
             location={currentPosition}
             radius={currentPosition && 100}
         />
         <p>
-            {location && location.gmaps.icon && <img src={location.gmaps.icon} alt={""}/>}
-            {location && location.gmaps.name}
+            {location && location.icon && <img src={location.icon} alt={""}/>}
+            {location && location.name}
         </p>
         <ul>
             {nearbyPlaces
@@ -89,7 +108,10 @@ function App() {
         <div className="mapContainer">
             <Map
                 currentPosition={currentPosition && [currentPosition.lat(), currentPosition.lng()]}
-                locations={[]}
+                locations={nearbyPlaces}
+                setLocation={setLocation}
+                viewport={viewport}
+                setViewport={setViewport}
             />
         </div>
 
