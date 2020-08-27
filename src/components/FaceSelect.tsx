@@ -17,6 +17,24 @@ const images = [
     },
 ];
 
+const imageSrc = {
+    filter: 'grayscale(80%)',
+    height: '2em',
+    '&:hover, &$focusVisible': {
+        filter: 'grayscale(0%)',
+        zIndex: 1,
+        '& $imageBackdrop': {
+            opacity: 0.15,
+        },
+        '& $imageMarked': {
+            opacity: 0,
+        },
+        '& $imageTitle': {
+            border: '4px solid currentColor',
+        },
+    },
+}
+
 const useStyles = makeStyles((theme) => ({
     root: {
         // display: 'flex',
@@ -58,36 +76,14 @@ const useStyles = makeStyles((theme) => ({
         color: theme.palette.common.white,
     },
     imageSelected: {
+        ...imageSrc,
+        transition: theme.transitions.create('height'),
         filter: 'grayscale(0%)',
-        '&:hover, &$focusVisible': {
-            filter: 'grayscale(0%)',
-            zIndex: 1,
-            '& $imageBackdrop': {
-                opacity: 0.15,
-            },
-            '& $imageMarked': {
-                opacity: 0,
-            },
-            '& $imageTitle': {
-                border: '4px solid currentColor',
-            },
-        },
+        height: '3em',
     },
-    imageSrc: {
-        filter: 'grayscale(80%)',
-        '&:hover, &$focusVisible': {
-            filter: 'grayscale(0%)',
-            zIndex: 1,
-            '& $imageBackdrop': {
-                opacity: 0.15,
-            },
-            '& $imageMarked': {
-                opacity: 0,
-            },
-            '& $imageTitle': {
-                border: '4px solid currentColor',
-            },
-        },
+    imageSrc : {
+        ...imageSrc,
+        transition: theme.transitions.create('height'),
     },
     imageBackdrop: {
         position: 'absolute',
@@ -121,7 +117,7 @@ export default ({current, onSelect}: {
     const classes = useStyles();
 
     return (
-        <div className={classes.root}>
+        <span className={classes.root}>
             {images.map((image, i) => (
                 <ButtonBase
                     focusRipple
@@ -151,6 +147,6 @@ export default ({current, onSelect}: {
           </span>
                 </ButtonBase>
             ))}
-        </div>
+        </span>
     );
 }

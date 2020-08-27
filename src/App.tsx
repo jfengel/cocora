@@ -98,13 +98,13 @@ function App() {
             location={currentPosition}
             radius={currentPosition && 100}
         />
-        <p>
-            {location && location.icon && <img src={location.icon} alt={""}/>}
-            {location && location.name}
+        {location && <div className="locationBar">
+            {location.icon && <img src={location.icon} alt={""} height="30"/>}
+            {location.name}
             <FaceSelect
                 current={rating}
                 onSelect={setRating}/>
-        </p>
+        </div>}
         <div className="mapContainer">
             <Map
                 currentPosition={currentPosition && [currentPosition.lat(), currentPosition.lng()]}
