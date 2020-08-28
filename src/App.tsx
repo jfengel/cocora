@@ -1,16 +1,20 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Geosuggest, {Suggest} from 'react-geosuggest';
 import 'react-geosuggest/module/geosuggest.css'
 import './App.css';
 import Map, {MAX_ZOOM} from './components/Map'
 import {Viewport} from "react-leaflet";
 import FaceSelect from "./components/FaceSelect";
+import getDistance from "geolib/es/getDistance";
 
 const GEOLOCATION_UPDATE_FREQUENCY_MSEC = 1000;
 const SEARCH_RADIUS_METERS = 500;
 
 const googleToLeafletPair = (g: google.maps.LatLng) : [number, number] => {
     return [g.lat(), g.lng()];
+}
+const leafletPairToGoogle = (pair: [number, number]) : google.maps.LatLng => {
+    return new google.maps.LatLng(pair[0], pair[1])
 }
 
 
@@ -23,10 +27,21 @@ function App() {
     const [location, setLoc] = useState<google.maps.places.PlaceResult>();
     const [currentPosition, setCurrentPosition] = useState<google.maps.LatLng>();
     const [nearbyPlaces, setNearbyPlaces] = useState<google.maps.places.PlaceResult[]>([]);
-    const [viewport, setViewport] = useState<Viewport | undefined>();
+    const [viewport, setViewportDirect] = useState<Viewport | undefined>();
     const [rating, setRating] = useState<number | undefined>();
 
-    const positionRef = useRef(currentPosition);
+    const setViewport = (vp : Viewport) => {
+        if (vp.center) {
+            const delta = viewport?.center
+                ? getDistance(viewport?.center, vp.center)
+                : Number.POSITIVE_INFINITY;
+            // Reload if the distance is greater than 250 meters
+            if(delta > 250) {
+                findNearbyPlaces(leafletPairToGoogle(vp.center));
+            }
+        }
+        setViewportDirect(vp);
+    }
 
     const setLocation = (loc : google.maps.places.PlaceResult) => {
         if(loc.geometry?.location) {
@@ -39,10 +54,8 @@ function App() {
         setLoc(loc);
     }
 
-    const findNearbyPlaces = (current : google.maps.LatLng) => {
-        const location = current || positionRef.current;
+    const findNearbyPlaces = (location : google.maps.LatLng) => {
         if (location) {
-            console.info("Looking for nearby things at", location);
             const placesService = new google.maps.places.PlacesService(document.createElement('div'));
             placesService.nearbySearch({
                 location,
@@ -65,10 +78,6 @@ function App() {
                             const here = new google.maps.LatLng(latitude, longitude);
                             setCurrentPosition(here);
                             lastUpdate = now;
-                            if(!positionRef.current) {
-                                findNearbyPlaces(here);
-                            }
-                            positionRef.current = here;
                         }
                     }
                 },
