@@ -20,8 +20,9 @@ exports.handler = (event, context, callback) => {
         const create = 'CREATE TABLE `cocora`.`ratings` (\n' +
             '  `userid` VARCHAR(32) NOT NULL,\n' +
             '  `placeid` VARCHAR(45) NOT NULL,\n' +
-            '  `rating` TINYINT NULL,\n' +
-            '  `date` TIMESTAMP NULL,\n' +
+            '  `days_since_epoch` INT NOT NULL,\n' +
+            '  `rating` TINYINT NOT NULL,\n' +
+            '  `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n' +
             '  PRIMARY KEY (`userid`, `placeid`),\n' +
             '  INDEX `userid` (`userid` ASC),\n' +
             '  INDEX `placeid` (`placeid` ASC));\n'
