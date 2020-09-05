@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
         position: 'relative',
         // height: 200,
         '&:hover, &$focusVisible': {
-            filter: 'grayscale(0%)',
+            filter: 'grayscale(50%)',
             zIndex: 1,
             '& $imageBackdrop': {
                 opacity: 0.15,

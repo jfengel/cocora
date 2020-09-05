@@ -6,9 +6,12 @@ import Map, {MAX_ZOOM} from './components/Map'
 import {Viewport} from "react-leaflet";
 import FaceSelect from "./components/FaceSelect";
 import getDistance from "geolib/es/getDistance";
+import {getAverageRating, saveRating} from "./services/server"
 
 const GEOLOCATION_UPDATE_FREQUENCY_MSEC = 1000;
 const SEARCH_RADIUS_METERS = 500;
+// Maps to the 3 ratings values in FaceSelect
+const RATING_INDEX = [0,3,5];
 
 const googleToLeafletPair = (g: google.maps.LatLng) : [number, number] => {
     return [g.lat(), g.lng()];
@@ -23,14 +26,29 @@ function suggestionToPlace(e: Suggest) : google.maps.places.PlaceResult {
     return e.gmaps; // Despite the TS definition, it seems compatible with PlaceResult
 }
 
+type Rating = {
+    rating : number;
+}
+
 function App() {
     const [location, setLoc] = useState<google.maps.places.PlaceResult>();
     const [currentPosition, setCurrentPosition] = useState<google.maps.LatLng>();
     const [nearbyPlaces, setNearbyPlaces] = useState<google.maps.places.PlaceResult[]>([]);
-    const [viewport, setViewportDirect] = useState<Viewport | undefined>();
-    const [rating, setRating] = useState<number | undefined>();
+    const [viewport, setViewport] = useState<Viewport | undefined>();
+    const [avgRating, setAvgRatingDirect] = useState<number>();
+    const [myRating, setMyRating] = useState<number>();
 
-    const setViewport = (vp : Viewport) => {
+    const setAvgRating = (rating : Rating) => {
+        setAvgRatingDirect(rating.rating);
+    }
+
+    const saveUserRating = (location: string, rating: number) => {
+        setMyRating(rating);
+        saveRating(location, rating);
+        getAverageRating(location).then(setAvgRating)
+    }
+
+    const moveViewport = (vp : Viewport) => {
         if (vp.center) {
             const delta = viewport?.center
                 ? getDistance(viewport?.center, vp.center)
@@ -40,13 +58,16 @@ function App() {
                 findNearbyPlaces(leafletPairToGoogle(vp.center));
             }
         }
-        setViewportDirect(vp);
+        setViewport(vp);
     }
 
     const setLocation = (loc : google.maps.places.PlaceResult) => {
+        if(loc.place_id) {
+            getAverageRating(loc.place_id).then(setAvgRating);
+        }
         if(loc.geometry?.location) {
             const vp = {center: googleToLeafletPair(loc.geometry?.location), zoom: MAX_ZOOM};
-            setViewport(vp)
+            moveViewport(vp)
         }
         if(!nearbyPlaces.find(place => place.place_id === loc.place_id)) {
             setNearbyPlaces([...nearbyPlaces, loc])
@@ -107,12 +128,14 @@ function App() {
             location={currentPosition}
             radius={currentPosition && 100}
         />
-        {location && <div className="locationBar">
+        {location?.place_id && <div className="locationBar">
             {location.icon && <img src={location.icon} alt={""} height="30"/>}
-            {location.name}
+            <span>{location.name}</span>
+            {typeof avgRating === 'number' ? <span>Average rating: {avgRating}</span> : null}
+            <span>Your rating:</span>
             <FaceSelect
-                current={rating}
-                onSelect={setRating}/>
+                current={myRating && RATING_INDEX.indexOf(myRating) < 0 ? undefined : RATING_INDEX.indexOf(myRating!)}
+                onSelect={(rating) => saveUserRating(location.place_id!, RATING_INDEX[rating])}/>
         </div>}
         <div className="mapContainer">
             <Map
@@ -120,7 +143,7 @@ function App() {
                 locations={nearbyPlaces}
                 setLocation={setLocation}
                 viewport={viewport}
-                setViewport={setViewport}
+                setViewport={moveViewport}
             />
         </div>
 

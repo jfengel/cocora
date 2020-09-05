@@ -31,3 +31,7 @@ You'll need an unrestricted [Google Place API key](https://developers.google.com
     
 * Browse to http://localhost:8888/.netlify/functions/init
     
+## Notes
+
+The ratings database is indexed with (user, place, days-since-epoch). That way, the user
+can give one rating per place per day. Inserts replace the daily value.

@@ -30,3 +30,7 @@ html, body {
   align-items: center;
   height: 40px;
 }
+
+.locationBar span {
+  padding-right: .5em;
+}
