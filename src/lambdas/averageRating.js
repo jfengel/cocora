@@ -9,46 +9,40 @@ var pool = mysql.createPool({
 // connection.connect(null, (result) => console.info('connection', result));
 
 exports.handler = async (event, context, callback) => {
-    const p = new Promise((resolve, _) => {
-        const placeid = event.path.split('/').reverse()[0]
-        pool.getConnection((err, connection) => {
-            if (err) {
-                console.error('Error', err);
-                callback(null, {
-                    statusCode: 500,
-                    body: JSON.stringify(JSON.stringify(err))
-                })
-                resolve();
-                return;
-            }
+    try {
+        const p = new Promise((resolve, reject) => {
+            const placeid = event.path.split('/').reverse()[0]
+            pool.getConnection((err, connection) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
 
-            // noinspection SqlResolve
-            connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
-                [placeid],
-                (err, rows) => {
-                    console.info('query', JSON.stringify(rows));
-                    console.info('error', JSON.stringify(err));
-                    if (err) {
-                        callback(null, {
-                            statusCode: 500,
-                            body: JSON.stringify(err, null, 4)
-                        })
-                    } else {
-                        connection.release();
-                        const {rating} = rows[0];
-                        resolve({rating})
-                    }
-                })
+                // noinspection SqlResolve
+                connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
+                    [placeid],
+                    (err, rows) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            const {rating} = rows[0];
+                            resolve({rating})
+                        }
+                    })
+                connection.release();
+            })
+        });
+        const result = await p;
+        console.info('body', result);
+        callback(null, {
+            statusCode: 200,
+            body : JSON.stringify(result)
         })
-    });
-    const body = await p;
-    callback(null, {
-        statusCode: 200,
-        body
-    })
-
-
-    console.info('REturned');
-
-
+    } catch (err) {
+        console.error('Error', err);
+        callback(null, {
+            statusCode: 500,
+            body: JSON.stringify(err, null, 4)
+        })
+    }
 };
