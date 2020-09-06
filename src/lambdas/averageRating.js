@@ -9,18 +9,11 @@ var pool = mysql.createPool({
 // connection.connect(null, (result) => console.info('connection', result));
 
 exports.handler = (event, context, callback) => {
+    // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
+    context.callbackWaitsForEmptyEventLoop = false
+
     const placeid = event.path.split('/').reverse()[0]
     pool.getConnection((err, connection) => {
-        callback(null, {
-            statusCode: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*', // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({result: 'SUccessful'})
-        })
-        return;
-
         const reject = (err) => {
             console.error(err);
             callback(null, {
@@ -49,7 +42,7 @@ exports.handler = (event, context, callback) => {
                     callback(null, {
                         statusCode: 200,
                         headers: {
-                            'Access-Control-Allow-Origin': '*', // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
+                            'Access-Control-Allow-Origin': '*',
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(rows[0])
