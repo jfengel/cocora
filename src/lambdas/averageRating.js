@@ -34,6 +34,7 @@ exports.handler = async (event, context, callback) => {
         });
 
         const result = await p;
+        console.info('body', JSON.stringify(result));
         // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
         callback(null, {
             statusCode: 200,
