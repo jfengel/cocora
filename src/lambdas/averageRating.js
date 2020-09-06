@@ -23,6 +23,7 @@ exports.handler = (event, context, callback) => {
         connection.connect();
         console.info('connected');
 
+        // noinspection SqlResolve
         connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
             [placeid],
             (err, rows) => {
@@ -34,14 +35,17 @@ exports.handler = (event, context, callback) => {
                         body: JSON.stringify(err, null, 4)
                     })
                 } else {
+                    connection.release();
                     const {rating} = rows[0];
                     callback(null, {
                         statusCode: 200,
                         body: JSON.stringify({rating})
                     })
+                    console.info('callback called back')
                 }
             })
     })
+    console.info('REturned');
 
 
 };
