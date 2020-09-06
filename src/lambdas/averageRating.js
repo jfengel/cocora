@@ -8,51 +8,44 @@ var pool = mysql.createPool({
 
 // connection.connect(null, (result) => console.info('connection', result));
 
-exports.handler = async (event, context, callback) => {
-    try {
-        const p = new Promise((resolve, reject) => {
-            const placeid = event.path.split('/').reverse()[0]
-            pool.getConnection((err, connection) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
+exports.handler = (event, context, callback) => {
+    const placeid = event.path.split('/').reverse()[0]
+    pool.getConnection((err, connection) => {
 
-                // noinspection SqlResolve
-                connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
-                    [placeid],
-                    (err, rows) => {
-                        connection.release();
-                        if (err) {
-                            reject(err);
-                        } else {
-                            const {rating} = rows[0];
-                            resolve({rating})
-                        }
-                    })
+        const reject = (err) => {
+            console.error(err);
+            callback(null, {
+                statusCode: 500,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(err, null, 4)
             })
-        });
+        }
 
-        const result = await p;
-        console.info('body', JSON.stringify(result));
-        // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
-        callback(null, {
-            statusCode: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            body : JSON.stringify(result)
-        })
-    } catch (err) {
-        console.error('Error', err);
-        callback(null, {
-            statusCode: 500,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(err, null, 4)
-        })
-    }
-};
+        if (err) {
+            return reject(err);
+        }
+
+        // noinspection SqlResolve
+        connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
+            [placeid],
+            (err, rows) => {
+                connection.release();
+                if (err) {
+                    return reject(err);
+                } else {
+                    console.info('body', JSON.stringify(rows));
+                    callback(null, {
+                        statusCode: 200,
+                        headers: {
+                            'Access-Control-Allow-Origin': '*', // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(rows[0])
+                    })
+                }
+            })
+    })
+}
