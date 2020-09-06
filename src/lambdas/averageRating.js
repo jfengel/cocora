@@ -11,32 +11,28 @@ var pool = mysql.createPool({
 exports.handler = async (event, context, callback) => {
     try {
         const p = new Promise((resolve, reject) => {
-            const placeid = event.path.split('/').reverse()[0]
-            pool.getConnection((err, connection) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-
-                // noinspection SqlResolve
-                connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
-                    [placeid],
-                    (err, rows) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            const {rating} = rows[0];
-                            resolve({rating})
-                        }
-                    })
-                connection.release();
-            })
+            resolve({result: 'From promise'})
+            // const placeid = event.path.split('/').reverse()[0]
+            // pool.getConnection((err, connection) => {
+            //     if (err) {
+            //         reject(err);
+            //         return;
+            //     }
+            //
+            //     // noinspection SqlResolve
+            //     connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
+            //         [placeid],
+            //         (err, rows) => {
+            //             if (err) {
+            //                 reject(err);
+            //             } else {
+            //                 const {rating} = rows[0];
+            //                 resolve({rating})
+            //             }
+            //         })
+            //     connection.release();
+            // })
         });
-        callback(null, {
-            statusCode: 200,
-            body : JSON.stringify("Callback is still valid")
-        })
-
         const result = await p;
         console.info('body', result);
         callback(null, {
