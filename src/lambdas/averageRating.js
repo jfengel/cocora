@@ -22,6 +22,7 @@ exports.handler = async (event, context, callback) => {
                 connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
                     [placeid],
                     (err, rows) => {
+                        connection.release();
                         if (err) {
                             reject(err);
                         } else {
@@ -29,7 +30,6 @@ exports.handler = async (event, context, callback) => {
                             resolve({rating})
                         }
                     })
-                connection.release();
             })
         });
 
