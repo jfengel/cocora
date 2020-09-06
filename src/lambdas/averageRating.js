@@ -19,14 +19,15 @@ exports.handler = (event, context, callback) => {
             })
             return;
         }
-        console.info('Pool yielded connection', JSON.stringify(connection));
+        console.info('connecting');
         connection.connect();
         console.info('connected');
 
         connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
             [placeid],
             (err, rows) => {
-                console.info('query', JSON.stringify(err), JSON.stringify(rows));
+                console.info('query',  JSON.stringify(rows));
+                console.info('error', JSON.stringify(err));
                 if (err) {
                     callback(null, {
                         statusCode: 500,
