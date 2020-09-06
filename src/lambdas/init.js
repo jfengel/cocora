@@ -9,6 +9,7 @@ var connection = mysql.createConnection({
 connection.connect(null, (result) => console.info('connection', result));
 
 exports.handler = (event, context, callback) => {
+    context.callbackWaitsForEmptyEventLoop = false
 
     connection.query("CREATE SCHEMA IF NOT EXISTS cocora", function(err) {
         if(err) {
@@ -23,7 +24,7 @@ exports.handler = (event, context, callback) => {
             '  `days_since_epoch` INT NOT NULL,\n' +
             '  `rating` TINYINT NOT NULL,\n' +
             '  `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n' +
-            '  PRIMARY KEY (`userid`, `placeid`),\n' +
+            '  PRIMARY KEY (`userid`, `placeid`, `days_since_epoch`),\n' +
             '  INDEX `userid` (`userid` ASC),\n' +
             '  INDEX `placeid` (`placeid` ASC));\n'
         connection.query(create, (err, rows, fields) => {
