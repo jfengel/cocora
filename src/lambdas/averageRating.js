@@ -9,8 +9,11 @@ var pool = mysql.createPool({
 // connection.connect(null, (result) => console.info('connection', result));
 
 exports.handler = (event, context, callback) => {
+    console.info('Connecting to', process.env.COCORA_DATABASE_HOST, 'with',
+        process.env.COCORA_DATABASE_PASSWORD.substring(10));
     const placeid = event.path.split('/').reverse()[0]
     pool.getConnection((err, connection) => {
+        console.info('connected', JSON.stringify(err));
         if (err) {
             console.error('Error', err);
             callback(null, {
