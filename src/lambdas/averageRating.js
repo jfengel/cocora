@@ -32,6 +32,11 @@ exports.handler = async (event, context, callback) => {
                 connection.release();
             })
         });
+        callback(null, {
+            statusCode: 200,
+            body : JSON.stringify("Callback is still valid")
+        })
+
         const result = await p;
         console.info('body', result);
         callback(null, {
