@@ -9,12 +9,6 @@ var pool = mysql.createPool({
 // connection.connect(null, (result) => console.info('connection', result));
 
 exports.handler = async (event, context, callback) => {
-    callback(null, {
-        statusCode: 200,
-        body: JSON.stringify({rating: 7})
-    })
-    return;
-
     const p = new Promise((resolve, _) => {
         const placeid = event.path.split('/').reverse()[0]
         pool.getConnection((err, connection) => {
@@ -27,9 +21,6 @@ exports.handler = async (event, context, callback) => {
                 resolve();
                 return;
             }
-            console.info('connecting');
-            connection.connect();
-            console.info('connected');
 
             // noinspection SqlResolve
             connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
@@ -45,20 +36,17 @@ exports.handler = async (event, context, callback) => {
                     } else {
                         connection.release();
                         const {rating} = rows[0];
-                        callback(null, {
-                            statusCode: 200,
-                            body: JSON.stringify({rating})
-                        })
-                        console.info('callback called back')
+                        resolve({rating})
                     }
-                    console.info('Resolving')
-                    resolve();
-                    console.info('Resolved');
-
                 })
         })
     });
-    await p;
+    const body = await p;
+    callback(null, {
+        statusCode: 200,
+        body
+    })
+
 
     console.info('REturned');
 
