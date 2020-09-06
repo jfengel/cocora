@@ -11,6 +11,15 @@ var pool = mysql.createPool({
 exports.handler = (event, context, callback) => {
     const placeid = event.path.split('/').reverse()[0]
     pool.getConnection((err, connection) => {
+        callback(null, {
+            statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*', // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({result: 'SUccessful'})
+        })
+        return;
 
         const reject = (err) => {
             console.error(err);
