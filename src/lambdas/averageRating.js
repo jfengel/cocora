@@ -9,6 +9,12 @@ var pool = mysql.createPool({
 // connection.connect(null, (result) => console.info('connection', result));
 
 exports.handler = async (event, context, callback) => {
+    callback(null, {
+        statusCode: 200,
+        body: JSON.stringify({rating: 7})
+    })
+    return;
+
     const p = new Promise((resolve, _) => {
         const placeid = event.path.split('/').reverse()[0]
         pool.getConnection((err, connection) => {
