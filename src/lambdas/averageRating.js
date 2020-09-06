@@ -11,28 +11,30 @@ var pool = mysql.createPool({
 exports.handler = async (event, context, callback) => {
     try {
         const p = new Promise((resolve, reject) => {
-            resolve({result: 'From promise'})
-            // const placeid = event.path.split('/').reverse()[0]
-            // pool.getConnection((err, connection) => {
-            //     if (err) {
-            //         reject(err);
-            //         return;
-            //     }
-            //
-            //     // noinspection SqlResolve
-            //     connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
-            //         [placeid],
-            //         (err, rows) => {
-            //             if (err) {
-            //                 reject(err);
-            //             } else {
-            //                 const {rating} = rows[0];
-            //                 resolve({rating})
-            //             }
-            //         })
-            //     connection.release();
-            // })
+            const placeid = event.path.split('/').reverse()[0]
+            pool.getConnection((err, connection) => {
+                resolve({result: 'Slightly less trivial resolve'})
+                // if (err) {
+                //     reject(err);
+                //     return;
+                // }
+                //
+                // // noinspection SqlResolve
+                // connection.query("SELECT AVG(rating) AS rating FROM cocora.ratings WHERE placeid = ? ",
+                //     [placeid],
+                //     (err, rows) => {
+                //         if (err) {
+                //             reject(err);
+                //         } else {
+                //             const {rating} = rows[0];
+                //             resolve({rating})
+                //         }
+                //     })
+                // connection.release();
+                pool.releaseConnection(connection);
+            })
         });
+
         const result = await p;
         console.info('body', result);
         callback(null, {
