@@ -5,15 +5,15 @@ import {Auth0Provider} from "@auth0/auth0-react";
 import './App.css';
 import Map, {MAX_ZOOM} from './components/Map'
 import {Viewport} from "react-leaflet";
-import FaceSelect from "./components/FaceSelect";
 import getDistance from "geolib/es/getDistance";
 import {getAverageRating, saveRating} from "./services/server"
 import LoginButton from './components/LoginButton.';
+import LocationBar from "./components/LocationBar";
 
 const GEOLOCATION_UPDATE_FREQUENCY_MSEC = 1000;
 const SEARCH_RADIUS_METERS = 500;
 // Maps to the 3 ratings values in FaceSelect
-const RATING_INDEX = [0, 3, 5];
+export const RATING_INDEX = [0, 3, 5];
 
 const googleToLeafletPair = (g: google.maps.LatLng): [number, number] => {
     return [g.lat(), g.lng()];
@@ -139,15 +139,12 @@ function App() {
                     />
                     <LoginButton/>
                 </div>
-                {location?.place_id && <div className="locationBar">
-                    {location.icon && <img src={location.icon} alt={""} height="30"/>}
-                    <span>{location.name}</span>
-                    {typeof avgRating === 'number' ? <span>Average rating: {avgRating}</span> : null}
-                    <span>Your rating:</span>
-                    <FaceSelect
-                        current={myRating && RATING_INDEX.indexOf(myRating) < 0 ? undefined : RATING_INDEX.indexOf(myRating!)}
-                        onSelect={(rating) => saveUserRating(location.place_id!, RATING_INDEX[rating])}/>
-                </div>}
+                <LocationBar
+                    location={location}
+                    avgRating={avgRating}
+                    myRating={myRating}
+                    saveUserRating={saveUserRating}
+                />
                 <div className="mapContainer">
                     <Map
                         currentPosition={currentPosition && [currentPosition.lat(), currentPosition.lng()]}
