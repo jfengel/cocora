@@ -34,3 +34,9 @@ html, body {
 .locationBar span {
   padding-right: .5em;
 }
+
+.cocora-login {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
