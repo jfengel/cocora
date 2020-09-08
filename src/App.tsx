@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import Geosuggest, {Suggest} from 'react-geosuggest';
 import 'react-geosuggest/module/geosuggest.css'
-import {Auth0Provider} from "@auth0/auth0-react";
+import {useAuth0} from "@auth0/auth0-react";
 import './App.css';
 import Map, {MAX_ZOOM} from './components/Map'
 import {Viewport} from "react-leaflet";
@@ -44,9 +44,10 @@ function App() {
         setAvgRatingDirect(rating.rating);
     }
 
+    const auth0 = useAuth0();
     const saveUserRating = (location: string, rating: number) => {
         setMyRating(rating);
-        saveRating(location, rating);
+        saveRating(location, rating, auth0);
         getAverageRating(location).then(setAvgRating)
     }
 
@@ -124,39 +125,32 @@ function App() {
             }
         }
 
-    return (
-        <Auth0Provider
-            domain="cocora.us.auth0.com"
-            clientId="bF7uqtoRKckWUBcn8kSFxqqCAYsZW92g"
-            redirectUri={window.location.origin}
-        >
-            <div className="App">
-                <div className="Header">
-                    <Geosuggest
-                        onSuggestSelect={(e) => setLocation(suggestionToPlace(e))}
-                        location={currentPosition}
-                        radius={currentPosition && 100}
-                    />
-                    <LoginButton/>
-                </div>
-                <LocationBar
-                    location={location}
-                    avgRating={avgRating}
-                    myRating={myRating}
-                    saveUserRating={saveUserRating}
-                />
-                <div className="mapContainer">
-                    <Map
-                        currentPosition={currentPosition && [currentPosition.lat(), currentPosition.lng()]}
-                        locations={nearbyPlaces}
-                        setLocation={setLocation}
-                        viewport={viewport}
-                        setViewport={moveViewport}
-                    />
-                </div>
+    return <div className="App">
+        <div className="Header">
+            <Geosuggest
+                onSuggestSelect={(e) => setLocation(suggestionToPlace(e))}
+                location={currentPosition}
+                radius={currentPosition && 100}
+            />
+            <LoginButton/>
+        </div>
+        <LocationBar
+            location={location}
+            avgRating={avgRating}
+            myRating={myRating}
+            saveUserRating={saveUserRating}
+        />
+        <div className="mapContainer">
+            <Map
+                currentPosition={currentPosition && [currentPosition.lat(), currentPosition.lng()]}
+                locations={nearbyPlaces}
+                setLocation={setLocation}
+                viewport={viewport}
+                setViewport={moveViewport}
+            />
+        </div>
 
-            </div>
-        </Auth0Provider>);
+    </div>
 }
 
 export default App;
