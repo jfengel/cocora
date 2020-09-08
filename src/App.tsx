@@ -149,6 +149,9 @@ function App() {
                 setViewport={moveViewport}
             />
         </div>
+        <div style={{margin: "auto"}}>
+            <a href="about.html">About Cocora</a>
+        </div>
 
     </div>
 }
