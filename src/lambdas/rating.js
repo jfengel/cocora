@@ -1,3 +1,5 @@
+const {authenticate} = require("./lib/authenticate");
+
 var mysql = require('mysql');
 const HttpStatus = require('http-status-codes')
 
@@ -10,16 +12,10 @@ var pool = mysql.createPool({
 const MSEC_PER_DAY = 1000 * 60 * 60 * 24;
 
 exports.handler = (event, context, callback) => {
-    const {user} = context.clientContext;
-    const userid = user && user.sub;
-    console.info('userid', userid);
-    if(!userid) {
-        return callback(null, {
-            statusCode: HttpStatus.UNAUTHORIZED,
-            body: JSON.stringify("You must log in to rate places.")
+    const user = authenticate(event, context, callback);
+    if(!user) return;
+    const userId = user.sub;
 
-        })
-    }
     context.callbackWaitsForEmptyEventLoop = false
     pool.getConnection((err, connection) => {
 
@@ -35,7 +31,7 @@ exports.handler = (event, context, callback) => {
         const days_since_epoch = Math.floor(Date.now() / MSEC_PER_DAY)
         connection.query("REPLACE INTO cocora.ratings SET ?",
             {
-                userid, placeid, days_since_epoch, rating,
+                userid: userId, placeid, days_since_epoch, rating,
             }
             , function (err) {
                 connection.release();
