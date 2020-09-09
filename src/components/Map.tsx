@@ -40,8 +40,8 @@ export default ({currentPosition, locations, setLocation, viewport, setViewport}
                     icon={!feature.icon ? undefined
                         : new L.Icon({
                             iconUrl: feature.icon,
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
+                            iconSize: [25, 25],
+                            iconAnchor: [12, 25],
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         })

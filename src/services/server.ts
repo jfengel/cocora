@@ -10,11 +10,14 @@ export const saveRating = (place: string, rating: number, auth0: Auth0ContextInt
                 },
             })
             if(response.ok) {
+                alert('success');
                 success(await response.json());
             } else {
+                alert( JSON.stringify(response));
                 failure(response);
             }
         } catch(e) {
+            alert(JSON.stringify(e));
             failure(e);
         }
     })

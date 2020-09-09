@@ -6,8 +6,6 @@ var pool = mysql.createPool({
     password: process.env.COCORA_DATABASE_PASSWORD
 });
 
-// connection.connect(null, (result) => console.info('connection', result));
-
 exports.handler = (event, context, callback) => {
     // Magic code from https://stackoverflow.com/questions/60181507/cant-return-mysql-db-query-results-in-netlify-lambda-function
     context.callbackWaitsForEmptyEventLoop = false
@@ -38,7 +36,6 @@ exports.handler = (event, context, callback) => {
                 if (err) {
                     return reject(err);
                 } else {
-                    console.info('body', JSON.stringify(rows));
                     callback(null, {
                         statusCode: 200,
                         headers: {

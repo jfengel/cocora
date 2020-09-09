@@ -45,10 +45,15 @@ function App() {
     }
 
     const auth0 = useAuth0();
-    const saveUserRating = (location: string, rating: number) => {
-        setMyRating(rating);
-        saveRating(location, rating, auth0);
-        getAverageRating(location).then(setAvgRating)
+    const saveUserRating = async (location: string, rating: number) => {
+        setMyRating(rating)
+        try {
+            await saveRating(location, rating, auth0);
+            getAverageRating(location).then(setAvgRating)
+        } catch(error) {
+            console.error(error);
+            alert(JSON.stringify(error));
+        }
     }
 
     const moveViewport = (vp: Viewport) => {

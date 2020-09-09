@@ -10,10 +10,9 @@ var pool = mysql.createPool({
 const MSEC_PER_DAY = 1000 * 60 * 60 * 24;
 
 exports.handler = (event, context, callback) => {
-    console.info('context', context);
-    console.info('event', event);
     const {user} = context.clientContext;
     const userid = user && user.sub;
+    console.info('userid', userid);
     if(!userid) {
         return callback(null, {
             statusCode: HttpStatus.UNAUTHORIZED,
