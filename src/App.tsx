@@ -118,9 +118,10 @@ function App() {
                     if (!isNaN(longitude) && !isNaN(latitude)) {
                         const now = new Date().valueOf()
                         if (now - lastUpdate > GEOLOCATION_UPDATE_FREQUENCY_MSEC) {
-                            // TODO also set a minimum update distance
                             const here = new google.maps.LatLng(latitude, longitude);
-                            if(!currentPosition ) {
+                            if(!currentPosition ||
+                                getDistance(googleToLeafletPair(currentPosition),
+                                    googleToLeafletPair(here)) > 250) {
                                 findNearbyPlaces(here);
                             }
                             setCurrentPosition(here);
