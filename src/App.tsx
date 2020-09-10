@@ -32,8 +32,23 @@ type Rating = {
     rating: number;
 }
 
+export function closestLocation(places: google.maps.places.PlaceResult[], currentPosition: google.maps.LatLng) {
+    return places.reduce((nearest, current) => {
+        if (!nearest.geometry) {
+            return current;
+        }
+        if (!current.geometry) {
+            return nearest;
+        }
+        return getDistance(googleToLeafletPair(currentPosition), googleToLeafletPair(nearest.geometry.location))
+        > getDistance(googleToLeafletPair(currentPosition), googleToLeafletPair(current.geometry.location))
+            ? current
+            : nearest
+    })
+}
+
 function App() {
-    const [location, setLoc] = useState<google.maps.places.PlaceResult>();
+    const [location, setLocationDirect] = useState<google.maps.places.PlaceResult>();
     const [currentPosition, setCurrentPosition] = useState<google.maps.LatLng>();
     const [nearbyPlaces, setNearbyPlaces] = useState<google.maps.places.PlaceResult[]>([]);
     const [viewport, setViewport] = useState<Viewport | undefined>();
@@ -69,18 +84,18 @@ function App() {
         setViewport(vp);
     }
 
-    const setLocation = (loc: google.maps.places.PlaceResult) => {
-        if (loc.place_id) {
-            getAverageRating(loc.place_id).then(setAvgRating);
+    const setLocation = (loc: google.maps.places.PlaceResult, doNotUpdate = false) => {
+        if(location && loc.place_id === location.place_id) {
+            return;
         }
         if (loc.geometry?.location) {
             const vp = {center: googleToLeafletPair(loc.geometry?.location), zoom: MAX_ZOOM};
             moveViewport(vp)
         }
-        if (!nearbyPlaces.find(place => place.place_id === loc.place_id)) {
+        if (!doNotUpdate && !nearbyPlaces.find(place => place.place_id === loc.place_id)) {
             setNearbyPlaces([...nearbyPlaces, loc])
         }
-        setLoc(loc);
+        setLocationDirect(loc);
     }
 
     const findNearbyPlaces = (location: google.maps.LatLng) => {
@@ -105,6 +120,9 @@ function App() {
                         if (now - lastUpdate > GEOLOCATION_UPDATE_FREQUENCY_MSEC) {
                             // TODO also set a minimum update distance
                             const here = new google.maps.LatLng(latitude, longitude);
+                            if(!currentPosition ) {
+                                findNearbyPlaces(here);
+                            }
                             setCurrentPosition(here);
                             lastUpdate = now;
                         }
@@ -129,6 +147,18 @@ function App() {
                 console.error('Could not find nearby places', status)
             }
         }
+    useEffect(() => {
+        if(!location && currentPosition && nearbyPlaces && nearbyPlaces.length > 0) {
+            const closest = closestLocation(nearbyPlaces, currentPosition);
+            setLocationDirect(closest);
+        }
+    }, [nearbyPlaces, currentPosition, location])
+
+    useEffect(() => {
+        if(location && location.place_id) {
+            getAverageRating(location.place_id).then(setAvgRating)
+        }
+    }, [location])
 
     return <div className="App">
         <div className="Header">
