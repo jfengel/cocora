@@ -186,7 +186,7 @@ function App() {
             />
         </div>
         <div style={{margin: "auto"}}>
-            <a href="/about.html">About Cocora</a>
+            <a href="/about.html">About Cocora and Privacy Policy</a>
         </div>
 
     </div>
